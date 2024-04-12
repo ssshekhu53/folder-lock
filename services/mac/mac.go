@@ -55,6 +55,15 @@ func (m *mac) Init(password string) error {
 }
 
 func (m *mac) Lock() error {
+	_, err := os.Stat(hiddenFileName)
+	if err != nil {
+		if err == os.ErrNotExist {
+			return errors.New("folder lock not initialized or is still locked")
+		}
+
+		return err
+	}
+
 	return os.Rename(fileName, hiddenFileName)
 }
 
