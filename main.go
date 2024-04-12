@@ -29,8 +29,8 @@ func main() {
 	handler := handlers.New(service)
 
 	app.SubCommand("init", handler.Init)
-	app.SubCommand("lock", handler.Lock)
 	app.SubCommand("unlock", handler.Unlock)
+	app.SubCommand("lock", handler.Lock)
 
 	app.Run()
 }

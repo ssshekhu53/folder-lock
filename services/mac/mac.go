@@ -23,30 +23,24 @@ func New(crypt services.Crypt) services.FolderLock {
 }
 
 func (m *mac) Init(password string) error {
-	fileInfo, err := os.Stat(fileName)
-	if err != nil {
-		if err != os.ErrNotExist {
-			return err
-		}
+	_, err := os.Stat(fileName)
+	if err == nil {
+		return errors.New("folder lock already initialized")
 	}
 
-	if fileInfo != nil {
-		return errors.New("folder lock directory already exists")
-	}
-
-	file, err := os.Create(fileName)
+	err = os.Mkdir(fileName, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	_, err = os.Create(filepath.Join(file.Name(), ".nomedia"))
+	_, err = os.Create(filepath.Join(fileName, ".nomedia"))
 	if err != nil {
 		return err
 	}
 
 	encryptedPassword := m.crypt.Encrypt([]byte(password))
 
-	err = os.WriteFile(filepath.Join(file.Name(), encryptedDataFileName), encryptedPassword, os.ModePerm)
+	err = os.WriteFile(filepath.Join(fileName, encryptedDataFileName), encryptedPassword, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -55,7 +49,7 @@ func (m *mac) Init(password string) error {
 }
 
 func (m *mac) Lock() error {
-	_, err := os.Stat(hiddenFileName)
+	_, err := os.Stat(fileName)
 	if err != nil {
 		if err == os.ErrNotExist {
 			return errors.New("folder lock not initialized or is still locked")
