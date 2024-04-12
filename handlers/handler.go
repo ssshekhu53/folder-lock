@@ -10,6 +10,7 @@ type Handler interface {
 	Init(ctx *gofr.Context) (interface{}, error)
 	Lock(ctx *gofr.Context) (interface{}, error)
 	Unlock(ctx *gofr.Context) (interface{}, error)
+	Help(_ *gofr.Context) (interface{}, error)
 }
 
 type handler struct {
@@ -55,4 +56,16 @@ func (h *handler) Unlock(ctx *gofr.Context) (interface{}, error) {
 	}
 
 	return "folder unlocked", nil
+}
+
+func (h *handler) Help(_ *gofr.Context) (interface{}, error) {
+	return `Folder Lock CLI Tool
+
+Usage:
+  folder-lock [command]
+
+Available Commands:
+  init      Create a directory named private and initialize the folder lock
+  lock      Hide the private directory
+  unlock    Unhide the private directory`, nil
 }

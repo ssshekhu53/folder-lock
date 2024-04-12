@@ -31,6 +31,7 @@ func main() {
 	app.SubCommand("init", handler.Init)
 	app.SubCommand("unlock", handler.Unlock)
 	app.SubCommand("lock", handler.Lock)
+	app.SubCommand("help", handler.Help)
 
 	app.Run()
 }
