@@ -1,4 +1,4 @@
-package mac
+package unix
 
 import (
 	"errors"
@@ -14,15 +14,15 @@ const (
 	encryptedDataFileName = `.encrypted-data`
 )
 
-type mac struct {
+type unix struct {
 	crypt services.Crypt
 }
 
 func New(crypt services.Crypt) services.FolderLock {
-	return &mac{crypt: crypt}
+	return &unix{crypt: crypt}
 }
 
-func (m *mac) Init(password string) error {
+func (m *unix) Init(password string) error {
 	_, err := os.Stat(fileName)
 	if err == nil {
 		return errors.New("folder lock already initialized")
@@ -48,7 +48,7 @@ func (m *mac) Init(password string) error {
 	return nil
 }
 
-func (m *mac) Lock() error {
+func (m *unix) Lock() error {
 	_, err := os.Stat(fileName)
 	if err != nil {
 		if err == os.ErrNotExist {
@@ -61,7 +61,7 @@ func (m *mac) Lock() error {
 	return os.Rename(fileName, hiddenFileName)
 }
 
-func (m *mac) Unlock(password string) error {
+func (m *unix) Unlock(password string) error {
 	_, err := os.Stat(hiddenFileName)
 	if err != nil {
 		if err == os.ErrNotExist {
@@ -76,30 +76,30 @@ func (m *mac) Unlock(password string) error {
 		return err
 	}
 
-	decrptedData, err := m.crypt.Decrypt(string(data))
+	decryptedData, err := m.crypt.Decrypt(string(data))
 	if err != nil {
 		return err
 	}
 
-	if password != string(decrptedData) {
+	if password != string(decryptedData) {
 		return errors.New("unauthorized")
 	}
 
 	return os.Rename(hiddenFileName, fileName)
 }
 
-func (m *mac) UpdatePassword(oldPassword, newPassword string) error {
+func (m *unix) UpdatePassword(oldPassword, newPassword string) error {
 	data, err := os.ReadFile(filepath.Join(hiddenFileName, encryptedDataFileName))
 	if err != nil {
 		return err
 	}
 
-	decrptedData, err := m.crypt.Decrypt(string(data))
+	decryptedData, err := m.crypt.Decrypt(string(data))
 	if err != nil {
 		return err
 	}
 
-	if oldPassword != string(decrptedData) {
+	if oldPassword != string(decryptedData) {
 		return errors.New("unauthorized")
 	}
 
@@ -111,15 +111,4 @@ func (m *mac) UpdatePassword(oldPassword, newPassword string) error {
 	}
 
 	return nil
-}
-
-func (m *mac) getFileNameAndAbsPath(path string) (string, string, error) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", "", err
-	}
-
-	fileName := filepath.Base(path)
-
-	return absPath, fileName, nil
 }

@@ -2,13 +2,15 @@ package main
 
 import (
 	"runtime"
+	"ssshekhu53/folder-lock/constants"
+	"ssshekhu53/folder-lock/services/windows"
 
 	"gofr.dev/pkg/gofr"
 
 	"ssshekhu53/folder-lock/handlers"
 	"ssshekhu53/folder-lock/services"
 	cryptPkg "ssshekhu53/folder-lock/services/crypt"
-	"ssshekhu53/folder-lock/services/mac"
+	"ssshekhu53/folder-lock/services/unix"
 )
 
 func main() {
@@ -22,8 +24,10 @@ func main() {
 	}
 
 	switch runtime.GOOS {
-	case "darwin":
-		service = mac.New(crypt)
+	case constants.Darwin, constants.Linux:
+		service = unix.New(crypt)
+	case constants.Windows:
+		service = windows.New(crypt)
 	}
 
 	handler := handlers.New(service)
